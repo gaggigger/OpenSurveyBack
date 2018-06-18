@@ -1,4 +1,6 @@
 const Db = require('../services/database');
+const Jwt = require('jsonwebtoken');
+const Config = require('../config');
 
 module.exports = {
     find: function(userInfo) {
@@ -24,8 +26,9 @@ module.exports = {
         return new Promise(async (resolv, reject) => {
             const db = await Db.connect();
             const collection = db.collection('users');
-            collection.insert(userInfo, (err, result) => {
-                resolv(result);
+            collection.insert(userInfo, async (err, result) => {
+                const u = await this.find(userInfo);
+                resolv(u);
             });
         });
     },
@@ -36,8 +39,9 @@ module.exports = {
             const collection = db.collection('users');
             collection.updateOne({
                 login: userInfo.login
-            }, { $set: userInfo }, (err, result) => {
-                resolv(result);
+            }, { $set: userInfo }, async (err, result) => {
+                const u = await this.find(userInfo);
+                resolv(u);
             });
         });
     },
@@ -49,5 +53,16 @@ module.exports = {
         } else {
             return await this.update(userInfo);
         }
+    },
+
+    generateToken: function(user) {
+        return new Promise((resolv, reject) => {
+            Jwt.sign(user, Config.api.secret, {expiresIn: 60 * 60 * 24}, (err, token) => {
+                if (err) {
+                    reject(err);
+                }
+                resolv(token);
+            });
+        });
     }
 };

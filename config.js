@@ -1,4 +1,7 @@
 module.exports = {
+    'api': {
+        'secret': 'cledelamortquituebeaucouphuhuhu'
+    },
     'github': {
         'client_id': '572811babd84307d5b96',
         'client_secret': '23e4f06e88d18bf02007c7f70c5dd99eab3e294590e'
