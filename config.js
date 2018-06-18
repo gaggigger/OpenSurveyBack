@@ -9,5 +9,9 @@ module.exports = {
     'mongo': {
         'url': 'mongodb://localhost:27017',
         'database': 'opensurvey'
+    },
+    'linkedin': {
+        'client_id': '777vw6qg7cyhby',
+        'client_secret': 'weOE1EzMhMhJKQE1'
     }
 };

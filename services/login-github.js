@@ -21,6 +21,6 @@ module.exports = {
             name: userInfo.name,
             avatar: userInfo.avatar_url,
             provider: 'github'
-        }
+        };
     }
 };

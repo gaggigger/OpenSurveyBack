@@ -13,12 +13,11 @@ module.exports = {
             //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
         });
         const userInfo = ticket.getPayload();
-        console.log(userInfo);
         return {
             login: userInfo.email,
             name: userInfo.name,
             avatar: userInfo.picture,
             provider: 'google'
-        }
+        };
     }
 };
