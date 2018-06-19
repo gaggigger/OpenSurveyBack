@@ -2,7 +2,7 @@ const LoginGoogle = require('../services/login-google');
 const LoginGithub = require('../services/login-github');
 const LoginFacebook = require('../services/login-facebook');
 const LoginLinkedin = require('../services/login-linkedin');
-const Response = require('../helpers/response');
+const ServerException = require('../exceptions/ServerException');
 
 module.exports = {
     getUserInfoFromRequest: async function(req, res) {
@@ -16,7 +16,7 @@ module.exports = {
             case 'linkedin':
                 return await LoginLinkedin.getpayload(req.body.token, req.body.redirect_uri);
             default:
-                return Response.sendError(res, 501, 'Provider not suported');
+                throw new ServerException.NotImplementedException();
         }
     }
 };

@@ -1,5 +1,5 @@
 const httpHelper = require('../helpers/http');
-const Config = require('../config');
+const ClientException = require('../exceptions/ClientException');
 
 module.exports = {
     getpayload : async function (userId, token) {
@@ -7,8 +7,9 @@ module.exports = {
             'access_token': token
         }, 'GET', {
             'Accept': 'application/json'
+        }).catch(e => {
+            throw new ClientException.ForbiddenException();
         });
-        console.log(userInfo);
         return {
             login: userInfo.id,
             name: userInfo.name,

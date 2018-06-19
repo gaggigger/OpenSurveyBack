@@ -1,8 +1,7 @@
 const {OAuth2Client} = require('google-auth-library');
 const Config = require('../config');
 const client = new OAuth2Client(Config.google.client_id);
-
-// verify().catch(console.error);
+const ClientException = require('../exceptions/ClientException');
 
 module.exports = {
     getpayload : async function (token) {
@@ -11,6 +10,8 @@ module.exports = {
             audience: Config.google.client_id,  // Specify the CLIENT_ID of the app that accesses the backend
             // Or, if multiple clients access the backend:
             //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+        }).catch(e => {
+            throw new ClientException.ForbiddenException();
         });
         const userInfo = ticket.getPayload();
         return {
