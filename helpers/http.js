@@ -35,6 +35,12 @@ module.exports = {
                 options.headers = Object.assign({}, h);
             }
             const req = https.request(options, (res) => {
+                if (res.statusCode >= 400) {
+                    reject({
+                        status: res.statusCode,
+                        message: res.headers.status
+                    });
+                }
                 res.on('data', (d) => {
                     response += d;
                 });

@@ -2,6 +2,7 @@ const Config = require('../config');
 
 module.exports = {
     sendError(res, err) {
+        err.status = err.status || 500;
         return res.status(err.status).send({
             error : (err.message)? err.message : err
         });
