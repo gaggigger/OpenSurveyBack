@@ -5,7 +5,7 @@ const Login = require('../services/login');
 const User = require('../services/user');
 const Response = require('../helpers/response');
 
-Router.post('/login', Response.apiHeaders, async function(req, res, next) {
+Router.post('/', Response.apiHeaders, async function(req, res, next) {
     try {
         const userInfo = await Login.getUserInfoFromRequest(req, res);
         const user = await User.addOrUpdate(userInfo);

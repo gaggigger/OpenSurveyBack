@@ -25,3 +25,53 @@ exports.close = function(done) {
         });
     }
 };
+
+exports.find = function(key, obj) {
+    return new Promise(async (resolv, reject) => {
+        const db = await this.connect();
+        const collection = db.collection(key);
+        collection.find(obj).toArray((err, objects) => {
+            if (objects.length === 1) {
+                resolv(objects[0]);
+            } else if (objects.length === 0) {
+                resolv(null);
+            } else {
+                reject(objects);
+            }
+        });
+    });
+};
+
+exports.add = function(key, obj) {
+    return new Promise(async (resolv, reject) => {
+        const db = await this.connect();
+        const collection = db.collection(key);
+        collection.insert(obj, async (err, result) => {
+            const o = await this.find(key, obj);
+            resolv(o);
+        });
+    });
+};
+
+exports.update = function(key, obj, newObj) {
+    return new Promise(async (resolv, reject) => {
+        const db = await this.connect();
+        const collection = db.collection(key);
+        collection.updateOne(obj, {
+            $set: newObj
+        }, async (err, result) => {
+            const u = await this.find(key, obj);
+            resolv(u);
+        });
+    });
+};
+
+exports.addOrUpdate = async function(key, obj, newObj) {
+    if (newObj === undefined) newObj = Object.assign({}, obj);
+    const o = await this.find(key, obj);
+    if (o === null) {
+        return await this.add(key, obj);
+    } else {
+        return await this.update(key, obj, newObj);
+    }
+};
