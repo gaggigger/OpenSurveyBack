@@ -42,6 +42,18 @@ exports.find = function(key, obj) {
     });
 };
 
+exports.findAll = function(key, obj) {
+    return new Promise(async (resolv, reject) => {
+        const db = await this.connect();
+        const collection = db.collection(key);
+        collection.find(obj).toArray((err, objects) => {
+            console.log(objects);
+            if (err) reject(err);
+            else resolv(objects);
+        });
+    });
+};
+
 exports.add = function(key, obj) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();

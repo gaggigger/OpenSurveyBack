@@ -8,7 +8,7 @@ const Response = require('../helpers/response');
 Router.post('/', Response.apiHeaders, async function(req, res, next) {
     try {
         const userInfo = await Login.getUserInfoFromRequest(req, res);
-        const user = await User.addOrUpdate(userInfo);
+        const user = await User.add(userInfo);
         const token = await User.generateToken(user);
         res.status(200).json({
             'token': token

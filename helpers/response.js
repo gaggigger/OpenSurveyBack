@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const Config = require('../config');
 
 module.exports = {
@@ -20,6 +21,26 @@ module.exports = {
             res.status(200).end();
         } else {
             next();
+        }
+    },
+    apiToken: function(req, res, next) {
+        let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'] || req.headers['authorization'];
+        if (token) {
+            jwt.verify(token, Config.api.secret, (err, decoded) => {
+                if (! err) {
+                    // TODO iat and exp
+                    req.connectedUser = decoded;
+                } else {
+                    return res.status(403).send({
+                        'error' : err.message
+                    });
+                }
+            });
+            next();
+        } else {
+            return res.status(401).send({
+                'error' : 'Unauthorized'
+            });
         }
     }
 };

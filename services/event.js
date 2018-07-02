@@ -1,10 +1,15 @@
 const Db = require('../services/database');
 
 module.exports = {
-    key: 'events',
-    add: async function(name) {
+    add: async function(name, owner) {
         return await Db.addOrUpdate('events', {
-            name: name
+            name: name,
+            owner: owner
+        });
+    },
+    getByUser: async function(userId) {
+        return await Db.findAll('events', {
+            'owner': userId
         });
     }
 };
