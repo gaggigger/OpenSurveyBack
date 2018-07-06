@@ -1,5 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 const Config = require('../config');
+const Mongo = require('mongodb');
 
 const state = {
     db: null,
@@ -30,11 +31,12 @@ exports.find = function(key, obj) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
+        if(obj._id) obj._id = new Mongo.ObjectID(obj._id);
         collection.find(obj).toArray((err, objects) => {
             if (objects.length === 1) {
                 resolv(objects[0]);
             } else if (objects.length === 0) {
-                resolv(objects);
+                resolv(null);
             } else {
                 reject(objects);
             }
@@ -46,6 +48,7 @@ exports.findAll = function(key, obj, orderBy = {}) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
+        if(obj._id) obj._id = new Mongo.ObjectID(obj._id);
         collection.find(obj).sort(orderBy).toArray((err, objects) => {
             if (err) reject(err);
             else resolv(objects);
