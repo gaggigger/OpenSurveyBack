@@ -21,4 +21,13 @@ Router.get('/', Response.apiToken, async function(req, res, next) {
     }
 });
 
+Router.get('/:eventuid', Response.apiToken, async function(req, res, next) {
+    try {
+        const event = await Event.getByUserAndId(req.connectedUser._id, req.params.eventuid);
+        res.status(200).json(event);
+    } catch(e) {
+        return Response.sendError(res, e);
+    }
+});
+
 module.exports = Router;

@@ -34,7 +34,7 @@ exports.find = function(key, obj) {
             if (objects.length === 1) {
                 resolv(objects[0]);
             } else if (objects.length === 0) {
-                resolv(null);
+                resolv(objects);
             } else {
                 reject(objects);
             }
@@ -42,12 +42,11 @@ exports.find = function(key, obj) {
     });
 };
 
-exports.findAll = function(key, obj) {
+exports.findAll = function(key, obj, orderBy = {}) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
-        collection.find(obj).toArray((err, objects) => {
-            console.log(objects);
+        collection.find(obj).sort(orderBy).toArray((err, objects) => {
             if (err) reject(err);
             else resolv(objects);
         });
@@ -58,7 +57,9 @@ exports.add = function(key, obj) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
-        collection.insert(obj, async (err, result) => {
+        collection.insert(Object.assign({
+            inserted_at : new Date()
+        }, obj), async (err, result) => {
             const o = await this.find(key, obj);
             resolv(o);
         });
@@ -69,6 +70,7 @@ exports.update = function(key, obj, newObj) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
+        newObj.updated_at = new Date();
         collection.updateOne(obj, {
             $set: newObj
         }, async (err, result) => {
