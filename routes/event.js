@@ -15,7 +15,7 @@ Router.post('/', Response.apiToken, async function(req, res, next) {
 Router.get('/', Response.apiToken, async function(req, res, next) {
     try {
         const events = await Event.getByUser(req.connectedUser._id);
-        res.status(200).json(events);
+        res.status(200).json(Event.serialize(events));
     } catch(e) {
         return Response.sendError(res, e);
     }
@@ -24,7 +24,20 @@ Router.get('/', Response.apiToken, async function(req, res, next) {
 Router.get('/:eventuid', Response.apiToken, async function(req, res, next) {
     try {
         const event = await Event.getByUserAndId(req.connectedUser._id, req.params.eventuid);
-        res.status(200).json(event);
+        res.status(200).json(Event.serialize(event));
+    } catch(e) {
+        return Response.sendError(res, e);
+    }
+});
+
+Router.post('/:eventuid', Response.apiToken, async function(req, res, next) {
+    try {
+        const event = await Event.update(
+            req.connectedUser._id,
+            req.params.eventuid,
+            Object.assign({}, req.body)
+        );
+        res.status(200).json(Event.serialize(event));
     } catch(e) {
         return Response.sendError(res, e);
     }

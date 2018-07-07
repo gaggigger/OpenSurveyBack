@@ -1,7 +1,20 @@
 const Db = require('../services/database');
 const ClientException = require('../exceptions/ClientException');
+const ObjectHelpers = require('../helpers/object');
 
 module.exports = {
+    serialize: function(event) {
+        if(event.map) {
+            return event.map(item => this.formatEvent(item));
+        }
+        return this.formatEvent(event);
+    },
+    formatEvent: function(event) {
+        return ObjectHelpers.clone(event);
+        // if(event.datestart) event.datestart = DateHelpers.isoFromTimestamp(event.datestart);
+        // if(event.dateend) event.dateend = DateHelpers.isoFromTimestamp(event.dateend);
+        // return event;
+    },
     add: async function(name, owner) {
         name = name.toLowerCase().trim();
         if(name === '') throw new ClientException.BadRequestException();
@@ -16,6 +29,12 @@ module.exports = {
         } else {
             throw new ClientException.ForbiddenException();
         }
+    },
+    update: async function(userId, eventUid, data) {
+        return await Db.update('events', {
+            owner: userId,
+            _id: eventUid
+        }, ObjectHelpers.clone(data));
     },
     getByUser: async function(userId) {
         return await Db.findAll('events', {

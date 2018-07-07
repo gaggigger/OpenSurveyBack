@@ -48,7 +48,7 @@ exports.findAll = function(key, obj, orderBy = {}) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
-        if(obj._id) obj._id = new Mongo.ObjectID(obj._id);
+        if(obj._id && typeof obj._id === 'string') obj._id = new Mongo.ObjectID(obj._id);
         collection.find(obj).sort(orderBy).toArray((err, objects) => {
             if (err) reject(err);
             else resolv(objects);
@@ -74,6 +74,7 @@ exports.update = function(key, obj, newObj) {
         const db = await this.connect();
         const collection = db.collection(key);
         newObj.updated_at = new Date();
+        if(obj._id && typeof obj._id === 'string') obj._id = new Mongo.ObjectID(obj._id);
         collection.updateOne(obj, {
             $set: newObj
         }, async (err, result) => {
