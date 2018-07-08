@@ -16,7 +16,7 @@ module.exports = {
         // return event;
     },
     add: async function(name, owner) {
-        name = name.toLowerCase().trim();
+        name = name.trim().replace(/[^0-9a-z_@&]/ig, '');
         if(name === '') throw new ClientException.BadRequestException();
         const existingEvent = await Db.find('events', {
             name: name
