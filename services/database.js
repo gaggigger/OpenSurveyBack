@@ -31,7 +31,7 @@ exports.find = function(key, obj) {
     return new Promise(async (resolv, reject) => {
         const db = await this.connect();
         const collection = db.collection(key);
-        if(obj._id) obj._id = new Mongo.ObjectID(obj._id);
+        if(obj._id && typeof obj._id === 'string') obj._id = new Mongo.ObjectID(obj._id);
         collection.find(obj).toArray((err, objects) => {
             if (objects.length === 1) {
                 resolv(objects[0]);
