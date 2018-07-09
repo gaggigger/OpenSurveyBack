@@ -5,7 +5,7 @@ const Response = require('../helpers/response');
 
 Router.post('/', Response.apiToken, async function(req, res, next) {
     try {
-        const quiz = await Quiz.add(req.body.name, req.connectedUser._id);
+        const quiz = await Quiz.add(req.body.name, req.body.event, req.connectedUser._id);
         res.status(200).json(quiz);
     } catch(e) {
         return Response.sendError(res, e);
@@ -14,7 +14,7 @@ Router.post('/', Response.apiToken, async function(req, res, next) {
 
 Router.get('/', Response.apiToken, async function(req, res, next) {
     try {
-        const quizs = await Quiz.getByUser(req.connectedUser._id);
+        const quizs = await Quiz.getByUserAndEvent(req.connectedUser._id, req.query.event);
         res.status(200).json(Quiz.serialize(quizs));
     } catch(e) {
         return Response.sendError(res, e);

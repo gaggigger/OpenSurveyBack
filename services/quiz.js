@@ -13,7 +13,7 @@ module.exports = {
     formatQuiz: function(quiz) {
         return ObjectHelpers.clone(quiz);
     },
-    add: async function(name, owner) {
+    add: async function(name, event, owner) {
         name = name.toLowerCase().trim();
         if(name === '') throw new ClientException.BadRequestException();
         const existingQuiz = await Db.find(this.key, {
@@ -23,7 +23,8 @@ module.exports = {
         if(existingQuiz === null) {
             return await Db.add(this.key, {
                 name: name,
-                owner: owner
+                owner: owner,
+                event: [event]
             });
         } else {
             throw new ClientException.ForbiddenException();
@@ -42,12 +43,20 @@ module.exports = {
             inserted_at: 1
         });
     },
-    getByUserAndId: async function(userId, eventUid) {
+    getByUserAndId: async function(userId, quizUid) {
         return await Db.find(this.key, {
             'owner': userId,
-            '_id': eventUid
+            '_id': quizUid
         }, {
             inserted_at: 1
+        });
+    },
+    getByUserAndEvent: async function(userId, eventUid) {
+        return await Db.findAll(this.key, {
+            'owner': userId,
+            'event': { $in : [eventUid]  }
+        }, {
+            name: -1
         });
     }
 };
