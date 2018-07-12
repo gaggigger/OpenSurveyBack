@@ -3,7 +3,7 @@ const Router = Express.Router();
 const Event = require('../services/event');
 const Response = require('../helpers/response');
 
-Router.post('/', Response.apiToken, async function(req, res, next) {
+Router.post('/', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const event = await Event.add(req.body.name, req.connectedUser._id);
         res.status(200).json(event);
@@ -12,7 +12,7 @@ Router.post('/', Response.apiToken, async function(req, res, next) {
     }
 });
 
-Router.get('/', Response.apiToken, async function(req, res, next) {
+Router.get('/', Response.apiToken, Response.notGuest,async function(req, res, next) {
     try {
         const events = await Event.getByUser(req.connectedUser._id);
         res.status(200).json(Event.serialize(events));
@@ -21,7 +21,7 @@ Router.get('/', Response.apiToken, async function(req, res, next) {
     }
 });
 
-Router.get('/:eventuid', Response.apiToken, async function(req, res, next) {
+Router.get('/:eventuid', Response.apiToken, Response.notGuest,async function(req, res, next) {
     try {
         const event = await Event.getByUserAndId(req.connectedUser._id, req.params.eventuid);
         res.status(200).json(Event.serialize(event));
@@ -30,7 +30,7 @@ Router.get('/:eventuid', Response.apiToken, async function(req, res, next) {
     }
 });
 
-Router.post('/:eventuid', Response.apiToken, async function(req, res, next) {
+Router.post('/:eventuid', Response.apiToken, Response.notGuest,async function(req, res, next) {
     try {
         const event = await Event.update(
             req.connectedUser._id,

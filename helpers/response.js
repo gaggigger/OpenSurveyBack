@@ -42,5 +42,14 @@ module.exports = {
                 'error' : 'Unauthorized'
             });
         }
+    },
+    notGuest: function(req, res, next) {
+        if (req.connectedUser && req.connectedUser.provider && req.connectedUser.provider !== 'guest') {
+            next();
+        } else {
+            return res.status(401).send({
+                'error' : 'Unauthorized'
+            });
+        }
     }
 };

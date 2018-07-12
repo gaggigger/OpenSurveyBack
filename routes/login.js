@@ -7,9 +7,14 @@ const Response = require('../helpers/response');
 
 Router.post('/', Response.apiHeaders, async function(req, res, next) {
     try {
+        let token = '';
         const userInfo = await Login.getUserInfoFromRequest(req, res);
-        const user = await User.add(userInfo);
-        const token = await User.generateToken(user);
+        if (userInfo.provider === 'guest') {
+            token = await User.generateToken(userInfo);
+        } else {
+            const user = await User.add(userInfo);
+            token = await User.generateToken(user);
+        }
         res.status(200).json({
             'token': token
         });
