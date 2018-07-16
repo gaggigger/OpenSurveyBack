@@ -9,7 +9,7 @@ module.exports = {
         });
     },
 
-    generateToken: function(user) {
+    generateToken: function(user, eventName) {
         return new Promise((resolv, reject) => {
             Jwt.sign(user, Config.api.secret, {expiresIn: 60 * 60 * 24}, (err, token) => {
                 if (err) {
