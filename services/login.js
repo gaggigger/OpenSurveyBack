@@ -17,7 +17,7 @@ module.exports = {
             case 'linkedin':
                 return await LoginLinkedin.getpayload(req.body.token, req.body.redirect_uri);
             case 'guest':
-                return await LoginGuest.getpayload(req.body.token, req.body.event);
+                return await LoginGuest.getpayload(req.body.token);
             default:
                 throw new ServerException.NotImplementedException();
         }

@@ -4,12 +4,14 @@ const ClientException = require('../exceptions/ClientException');
 const Event = require('../services/event');
 
 module.exports = {
-    getpayload : async function (username, eventname) {
+    getpayload : async function (username) {
         const event = await Event.findByName(eventname);
+        const eventid = event? event._id : null;
         return {
-            login: token,
-            name: token,
+            login: username,
+            name: username,
             avatar: '',
+            event: eventid,
             provider: 'guest'
         };
     }
