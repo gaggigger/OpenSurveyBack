@@ -12,7 +12,16 @@ Router.post('/', Response.apiToken, Response.notGuest, async function(req, res, 
     }
 });
 
-Router.get('/', Response.apiToken, Response.notGuest,async function(req, res, next) {
+Router.get('/find/', async function(req, res, next) {
+    try {
+        const event = await Event.findByName(req.query.eventname);
+        res.status(200).json(event);
+    } catch(e) {
+        return Response.sendError(res, e);
+    }
+});
+
+Router.get('/', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const events = await Event.getByUser(req.connectedUser._id);
         res.status(200).json(Event.serialize(events));

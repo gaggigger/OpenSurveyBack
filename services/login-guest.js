@@ -5,13 +5,12 @@ const Event = require('../services/event');
 
 module.exports = {
     getpayload : async function (username) {
-        const event = await Event.findByName(eventname);
-        const eventid = event? event._id : null;
+        //const event = await Event.findByName(eventname);
+        //const eventid = event? event._id : null;
         return {
             login: username,
             name: username,
             avatar: '',
-            event: eventid,
             provider: 'guest'
         };
     }

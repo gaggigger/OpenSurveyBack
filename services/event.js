@@ -5,7 +5,7 @@ const ObjectHelpers = require('../helpers/object');
 module.exports = {
     key: 'events',
     getUnikName: function(name) {
-        return name.trim().replace(/[^0-9a-z_@&]/ig, '');
+        return name.trim().replace(/[^0-9a-z_@&]/ig, '').toLowerCase();
     },
     serialize: function(event) {
         if(event.map) {
@@ -22,14 +22,14 @@ module.exports = {
     findByName: async function(name) {
         const unikname = this.getUnikName(name);
         return await Db.find(this.key, {
-            unikname: unikname
+            unique_name: unikname
         });
     },
     add: async function(name, owner) {
         name = name.trim();
         const unikname = this.getUnikName(name);
         if(unikname === '') throw new ClientException.BadRequestException();
-        const existingEvent = this.findByName(name);
+        const existingEvent = await this.findByName(name);
         if(existingEvent === null) {
             return await Db.addOrUpdate(this.key, {
                 name: name,
