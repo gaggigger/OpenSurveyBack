@@ -21,7 +21,7 @@ Router.get('/', Response.apiToken, Response.notGuest, async function(req, res, n
     }
 });
 
-Router.get('/:quizuid', Response.apiToken, async function(req, res, next) {
+Router.get('/:quizuid', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const quiz = await Quiz.getByUserAndId(req.connectedUser._id, req.params.quizuid);
         res.status(200).json(Quiz.serialize(quiz));

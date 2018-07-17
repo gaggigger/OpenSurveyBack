@@ -3,6 +3,10 @@ const ClientException = require('../exceptions/ClientException');
 const ObjectHelpers = require('../helpers/object');
 
 module.exports = {
+    key: 'events',
+    getUnikName: function(name) {
+        return name.trim().replace(/[^0-9a-z_@&]/ig, '');
+    },
     serialize: function(event) {
         if(event.map) {
             return event.map(item => this.formatEvent(item));
@@ -15,15 +19,21 @@ module.exports = {
         // if(event.dateend) event.dateend = DateHelpers.isoFromTimestamp(event.dateend);
         // return event;
     },
-    add: async function(name, owner) {
-        name = name.trim().replace(/[^0-9a-z_@&]/ig, '');
-        if(name === '') throw new ClientException.BadRequestException();
-        const existingEvent = await Db.find('events', {
-            name: name
+    findByName: async function(name) {
+        const unikname = this.getUnikName(name);
+        return await Db.find(this.key, {
+            unikname: unikname
         });
+    },
+    add: async function(name, owner) {
+        name = name.trim();
+        const unikname = this.getUnikName(name);
+        if(unikname === '') throw new ClientException.BadRequestException();
+        const existingEvent = this.findByName(name);
         if(existingEvent === null) {
-            return await Db.addOrUpdate('events', {
+            return await Db.addOrUpdate(this.key, {
                 name: name,
+                unique_name: unikname,
                 owner: owner
             });
         } else {
@@ -31,20 +41,20 @@ module.exports = {
         }
     },
     update: async function(userId, eventUid, data) {
-        return await Db.update('events', {
+        return await Db.update(this.key, {
             owner: userId,
             _id: eventUid
         }, ObjectHelpers.clone(data));
     },
     getByUser: async function(userId) {
-        return await Db.findAll('events', {
+        return await Db.findAll(this.key, {
             'owner': userId
         }, {
             inserted_at: 1
         });
     },
     getByUserAndId: async function(userId, eventUid) {
-        return await Db.find('events', {
+        return await Db.find(this.key, {
             'owner': userId,
             '_id': eventUid
         }, {
