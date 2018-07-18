@@ -57,8 +57,11 @@ module.exports = {
         return await Db.find(this.key, {
             'owner': userId,
             '_id': eventUid
-        }, {
-            inserted_at: 1
+        });
+    },
+    getByUid: async function(eventUid) {
+        return await Db.find(this.key, {
+            '_id': eventUid
         });
     }
 };

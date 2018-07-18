@@ -30,9 +30,14 @@ Router.get('/', Response.apiToken, Response.notGuest, async function(req, res, n
     }
 });
 
-Router.get('/:eventuid', Response.apiToken, Response.notGuest,async function(req, res, next) {
+Router.get('/:eventuid', Response.apiToken, async function(req, res, next) {
     try {
-        const event = await Event.getByUserAndId(req.connectedUser._id, req.params.eventuid);
+        let event = null;
+        if (Response.isNotGuest(req)) {
+            event = await Event.getByUserAndId(req.connectedUser._id, req.params.eventuid);
+        } else {
+            event = await Event.getByUid(req.params.eventuid);
+        }
         res.status(200).json(Event.serialize(event));
     } catch(e) {
         return Response.sendError(res, e);

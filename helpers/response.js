@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const Config = require('../config');
 
-module.exports = {
+const self = module.exports = {
     sendError(res, err) {
         err.status = err.status || 500;
         return res.status(err.status).send({
             error : (err.message)? err.message : err
         });
     },
-    apiHeaders: function(req, res, next) {
+    apiHeaders(req, res, next) {
         if (Config.api.allowedOrigin.indexOf(req.headers.origin) > -1) {
             res.header('Access-Control-Allow-Origin', req.headers.origin);
         }
@@ -23,7 +23,7 @@ module.exports = {
             next();
         }
     },
-    apiToken: function(req, res, next) {
+    apiToken(req, res, next) {
         let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'] || req.headers['authorization'];
         if (token) {
             jwt.verify(token, Config.api.secret, (err, decoded) => {
@@ -43,8 +43,11 @@ module.exports = {
             });
         }
     },
-    notGuest: function(req, res, next) {
-        if (req.connectedUser && req.connectedUser.provider && req.connectedUser.provider !== 'guest') {
+    isNotGuest(req) {
+        return req.connectedUser && req.connectedUser.provider && req.connectedUser.provider !== 'guest';
+    },
+    notGuest(req, res, next) {
+        if (self.isNotGuest(req)) {
             next();
         } else {
             return res.status(401).send({
