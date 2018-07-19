@@ -9,6 +9,7 @@ const rEvent = require('./routes/event');
 const rQuiz = require('./routes/quiz');
 const Response = require('./helpers/response');
 const Config = require('./config');
+const Socket = require('./services/socket');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -28,13 +29,5 @@ app.use('/quiz', rQuiz);
 
 server.listen(Config.serverPort);
 
-//io.origins('*:*');
-io.on('connection', function (socket) {
-    console.log('Une connexion');
-    /*
-    socket.emit('news', { hello: 'world' });
-    socket.on('my other event', function (data) {
-        console.log(data);
-    });
-    */
-});
+// Socket event
+Socket.onConnection(io);
