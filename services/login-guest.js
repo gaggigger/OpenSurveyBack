@@ -5,10 +5,8 @@ const Event = require('../services/event');
 
 module.exports = {
     getpayload : async function (username) {
-        //const event = await Event.findByName(eventname);
-        //const eventid = event? event._id : null;
         return {
-            login: username,
+            login: Math.random().toString(36).substr(2),
             name: username,
             avatar: '',
             provider: 'guest'

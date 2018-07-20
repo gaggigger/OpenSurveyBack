@@ -27,3 +27,7 @@ exports.disconnecting = function(io, socket) {
     });
 };
 
+exports.emit = function(io, room, key, data) {
+    io.sockets.in(room).emit(key, data);
+};
+

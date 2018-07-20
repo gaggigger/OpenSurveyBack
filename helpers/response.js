@@ -8,6 +8,13 @@ const self = module.exports = {
             error : (err.message)? err.message : err
         });
     },
+    inject(key, obj) {
+        return function(req, res, next) {
+            if(! req.inject) req.inject = {};
+            req.inject[key] = obj;
+            next();
+        }
+    },
     apiHeaders(req, res, next) {
         if (Config.api.allowedOrigin.indexOf(req.headers.origin) > -1) {
             res.header('Access-Control-Allow-Origin', req.headers.origin);
