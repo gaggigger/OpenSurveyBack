@@ -34,5 +34,18 @@ module.exports = {
             question.likes.push(userName);
         }
         return await Db.update(this.key, { '_id': questionId }, question);
+    },
+    answered: async function(userId, questionId) {
+        if(!questionId) throw new ClientException.BadRequestException();
+        const question = await Db.find(this.key, {
+            '_id': questionId
+        });
+        const event = await Event.getByUserAndId(userId, question.event);
+        if(event) {
+            return await Db.update(this.key, { '_id': questionId }, {
+                answered: true
+            });
+        }
+        return question;
     }
 };
