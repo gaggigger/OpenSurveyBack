@@ -8,8 +8,10 @@ module.exports = {
         if(! question) throw new ClientException.BadRequestException();
         const event = await Event.getByUid(eventId);
         if(! event) throw new ClientException.NotFoundException();
+
         // restrict event
-        if(! Event.isAvailable(event)) throw new ClientException.ForbiddenException();
+        Event.isAvailable(event);
+
         return await Db.add(this.key, {
             question: question,
             event: eventId,
@@ -20,8 +22,6 @@ module.exports = {
         if(!eventId) throw new ClientException.BadRequestException();
         return await Db.findAll(this.key, {
             'event': eventId
-        }, {
-            // inserted_at: -1
         });
     },
     like: async function(userName, questionId) {
@@ -29,9 +29,11 @@ module.exports = {
         const question = await Db.find(this.key, {
             '_id': questionId
         });
+
         // restrict event
         const event = await Event.getByUid(question.event);
-        if(! Event.isAvailable(event)) throw new ClientException.ForbiddenException();
+        Event.isAvailable(event);
+
         if(question.answered) {
             return question;
         }
