@@ -4,6 +4,13 @@ const ObjectHelpers = require('../helpers/object');
 
 module.exports = {
     key: 'events',
+    isAvailable(event) {
+        if(!event) throw new ClientException.ForbiddenException();
+        const now = (new Date()).getTime();
+        if(event.dateend && now > event.dateend) throw new ClientException.ForbiddenException();
+        if(event.datestart && now < event.datestart) throw new ClientException.ForbiddenException();
+        return true;
+    },
     getUnikName: function(name) {
         return name.trim().replace(/[^0-9a-z_@&]/ig, '').toLowerCase();
     },

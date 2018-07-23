@@ -8,6 +8,8 @@ module.exports = {
         if(! question) throw new ClientException.BadRequestException();
         const event = await Event.getByUid(eventId);
         if(! event) throw new ClientException.NotFoundException();
+        // restrict event
+        if(! Event.isAvailable(event)) throw new ClientException.ForbiddenException();
         return await Db.add(this.key, {
             question: question,
             event: eventId,
@@ -19,7 +21,7 @@ module.exports = {
         return await Db.findAll(this.key, {
             'event': eventId
         }, {
-            inserted_at: -1
+            // inserted_at: -1
         });
     },
     like: async function(userName, questionId) {
@@ -27,6 +29,12 @@ module.exports = {
         const question = await Db.find(this.key, {
             '_id': questionId
         });
+        // restrict event
+        const event = await Event.getByUid(question.event);
+        if(! Event.isAvailable(event)) throw new ClientException.ForbiddenException();
+        if(question.answered) {
+            return question;
+        }
         if(! question.likes) {
             question.likes = [];
         }
