@@ -1,19 +1,20 @@
 const Db = require('../services/database');
 const ClientException = require('../exceptions/ClientException');
 const ObjectHelpers = require('../helpers/object');
+const Socket = require('../services/socket');
 
 module.exports = {
     key: 'quizs',
-    serialize: function(quiz) {
+    serialize(quiz) {
         if(quiz.map) {
             return quiz.map(item => this.formatQuiz(item));
         }
         return this.formatQuiz(quiz);
     },
-    formatQuiz: function(quiz) {
+    formatQuiz(quiz) {
         return ObjectHelpers.clone(quiz);
     },
-    add: async function(name, event, owner) {
+    async add(name, event, owner) {
         name = name.toLowerCase().trim();
         if(name === '') throw new ClientException.BadRequestException();
         const existingQuiz = await Db.find(this.key, {
@@ -30,28 +31,26 @@ module.exports = {
             throw new ClientException.ForbiddenException();
         }
     },
-    update: async function(userId, quizUid, data) {
+    async update(userId, quizUid, data) {
         return await Db.update(this.key, {
             owner: userId,
             _id: quizUid
         }, ObjectHelpers.clone(data));
     },
-    getByUser: async function(userId) {
+    async getByUser(userId) {
         return await Db.findAll(this.key, {
             'owner': userId
         }, {
             inserted_at: 1
         });
     },
-    getByUserAndId: async function(userId, quizUid) {
+    async getByUserAndId(userId, quizUid) {
         return await Db.find(this.key, {
             'owner': userId,
             '_id': quizUid
-        }, {
-            inserted_at: 1
         });
     },
-    getByUserAndEvent: async function(userId, eventUid) {
+    async getByUserAndEvent(userId, eventUid) {
         return await Db.findAll(this.key, {
             'owner': userId,
             'event': { $in : [eventUid]  }
