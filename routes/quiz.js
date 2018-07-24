@@ -48,7 +48,7 @@ Router.post('/:quizuid', Response.apiToken, Response.notGuest, async function(re
 Router.post('/:quizuid/start', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const quizRun = await QuizRun.run(req.connectedUser._id, req.body.event, req.params.quizuid);
-        Socket.emit(req.inject.io, quizRun.event, 'event-quiz-run', quizRun);
+        QuizRun.startProcess(req.inject.io, quizRun._id);
         res.status(200).json(quizRun);
     } catch(e) {
         return Response.sendError(res, e);

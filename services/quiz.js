@@ -11,6 +11,11 @@ module.exports = {
         }
         return this.formatQuiz(quiz);
     },
+    async find(quizId) {
+        return await Db.find(this.key, {
+            '_id': quizId.toString()
+        });
+    },
     formatQuiz(quiz) {
         return ObjectHelpers.clone(quiz);
     },
