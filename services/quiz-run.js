@@ -40,8 +40,21 @@ module.exports = {
     startProcess(socket, qrId) {
         return new Promise(async (resolv, reject) => {
             const quizRun = await this.find(qrId);
+            // Emit start
             Socket.emit(socket, quizRun.event, 'event-quiz-run', quizRun);
-            const quiz = await Quiz.find(quizRun.quiz);
+            // Emit current question after 3 secs
+            setTimeout(async () => {
+                const quiz = await Quiz.find(quizRun.quiz);
+                this.startQuestion(socket, quiz, quizRun);
+            }, 3000);
+        });
+    },
+    startQuestion(socket, quiz, quizRun) {
+        return new Promise(async (resolv, reject) => {
+            const question = quiz.questions[quizRun.current_question];
+            if (question) {
+                Socket.emit(socket, quizRun.event, 'event-quiz-question', question);
+            }
         });
     }
 };
