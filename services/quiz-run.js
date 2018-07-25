@@ -17,10 +17,53 @@ module.exports = {
             event: eventUid
         });
     },
+    async findByEventAndUid(eventUid, quizrunUid) {
+        return await Db.find(this.key, {
+            event: eventUid,
+            _id: quizrunUid
+        });
+    },
+    async findCurrentRunByEventAndQuiz(eventUid, quizUid) {
+        try {
+            return await Db.find(this.key, {
+                event: eventUid,
+                quiz: quizUid,
+                started: true,
+                finished: false
+            });
+        } catch(e) {
+            // Close all previous run
+            this.closeAllRun(eventUid, quizUid);
+            return null;
+        }
+    },
+    async closeAllRun(eventUid, quizUid) {
+        return new Promise(async (resolv, reject) => {
+            const runs = await Db.findAll(this.key, {
+                event: eventUid,
+                quiz: quizUid,
+                started: true,
+                finished: false
+            });
+            const promises = [];
+            runs.forEach(run => {
+                promises.push(Db.update(this.key, {
+                    _id: run._id.toString()
+                }, {
+                    finished: false
+                }));
+            });
+            Promise.all(promises).then(() => {
+                resolv(true);
+            }).catch(err => {
+                resolv(true);
+            });
+        });
+    },
     async add(eventUid, quizUid) {
         if(typeof quizUid === 'object') quizUid = quizUid.toString();
-        const quizRun = await this.findByEventAndQuiz(eventUid, quizUid);
-        if(quizRun !== null && quizRun.finished === false) {
+        const quizRun = await this.findCurrentRunByEventAndQuiz(eventUid, quizUid);
+        if(quizRun !== null) {
             return quizRun;
         }
         return await Db.add(this.key, {
@@ -42,18 +85,22 @@ module.exports = {
             const quizRun = await this.find(qrId);
             // Emit start
             Socket.emit(socket, quizRun.event, 'event-quiz-run', quizRun);
-            // Emit current question after 3 secs
+            // Emit current question after 5 secs
             setTimeout(async () => {
                 const quiz = await Quiz.find(quizRun.quiz);
                 this.startQuestion(socket, quiz, quizRun);
-            }, 3000);
+            }, 5000);
         });
     },
     startQuestion(socket, quiz, quizRun) {
         return new Promise(async (resolv, reject) => {
             const question = quiz.questions[quizRun.current_question];
             if (question) {
-                Socket.emit(socket, quizRun.event, 'event-quiz-question', question);
+                Socket.emit(socket, quizRun.event, 'event-quiz-question', {
+                    event: quizRun.event,
+                    quizrun: quizRun._id.toString(),
+                    question: question
+                });
             }
         });
     }

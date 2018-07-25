@@ -12,7 +12,7 @@ const rLogin = require('./routes/login');
 const rEvent = require('./routes/event');
 const rQuiz = require('./routes/quiz');
 const rQa = require('./routes/qa');
-
+const rQuizRun = require('./routes/quiz-run');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -28,6 +28,7 @@ app.use('/login', rLogin);
 app.use('/event', rEvent);
 app.use('/quiz', rQuiz);
 app.use('/qa', rQa);
+app.use('/quizrun', rQuizRun);
 
 server.listen(Config.serverPort);
 
