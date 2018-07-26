@@ -91,6 +91,15 @@ module.exports = {
         }
         return false;
     },
+    async closeQuestion(quizRunId) {
+        return await Db.update(this.key, {
+            _id: quizRunId
+        }, {
+            finished: true,
+            finished_at: (new Date()).getTime(),
+            current_question: 0
+        });
+    },
     startProcess(socket, qrId) {
         return new Promise(async (resolv, reject) => {
             const quizRun = await this.find(qrId);
@@ -105,29 +114,30 @@ module.exports = {
     },
     startQuestion(socket, quiz, quizRun) {
         return new Promise(async (resolv, reject) => {
-            const question = quiz.questions[quizRun.current_question];
-            if (question) {
-                console.log(quizRun.event);
-                Socket.emit(socket, quizRun.event, 'event-quiz-question', {
-                    event: quizRun.event,
-                    quizrun: quizRun._id.toString(),
-                    question: question
-                });
+            if (quiz && quiz.questions && quiz.questions[quizRun.current_question]) {
+                //const question = quiz.questions[quizRun.current_question];
+                const question = await this.getCurrentQuestion(
+                    quizRun.event.toString(),
+                    quizRun._id.toString()
+                );
+                Socket.emit(socket, quizRun.event.toString(), 'event-quiz-question', question);
                 setTimeout(async () => {
                     const qr = await this.incrementCurrentQuestion(quiz, quizRun);
                     if(qr) {
                         this.startQuestion(socket, quiz, qr);
                     } else {
                         // TODO close quizrun
+                        this.closeQuestion(quizRun._id.toString());
                     }
-                }, 10000);
+                }, 5000);
             }
+            resolv(true);
         });
     },
     async getCurrentQuestion(eventUid, quizRunUid) {
         const res = {};
         const quizRun = await this.findByEventAndUid(eventUid, quizRunUid);
-        if(quizRun === null) return {
+        if(quizRun === null || quizRun.finished === true) return {
             question: {
                 name: '',
                 response: []
