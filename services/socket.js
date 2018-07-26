@@ -28,6 +28,9 @@ exports.disconnecting = function(io, socket) {
 };
 
 exports.emit = function(io, room, key, data) {
-    io.sockets.in(room).emit(key, data);
+    if(typeof data === 'object') {
+        io.sockets.in(room).emit(key, Object.assign({}, data));
+    } else {
+        io.sockets.in(room).emit(key, data);
+    }
 };
-
