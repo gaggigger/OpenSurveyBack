@@ -19,8 +19,8 @@ module.exports = {
     },
     async findByEventAndUid(eventUid, quizrunUid) {
         return await Db.find(this.key, {
-            event: eventUid,
-            _id: quizrunUid
+            event: eventUid.toString(),
+            _id: quizrunUid.toString()
         });
     },
     async findCurrentRunByEventAndQuiz(eventUid, quizUid) {
@@ -115,7 +115,6 @@ module.exports = {
     startQuestion(socket, quiz, quizRun) {
         return new Promise(async (resolv, reject) => {
             if (quiz && quiz.questions && quiz.questions[quizRun.current_question]) {
-                //const question = quiz.questions[quizRun.current_question];
                 const question = await this.getCurrentQuestion(
                     quizRun.event.toString(),
                     quizRun._id.toString()
@@ -126,10 +125,11 @@ module.exports = {
                     if(qr) {
                         this.startQuestion(socket, quiz, qr);
                     } else {
-                        // TODO close quizrun
+                        // close quizrun
                         this.closeQuestion(quizRun._id.toString());
+                        Socket.emit(socket, quizRun.event.toString(), 'event-quiz-question-end', quizRun);
                     }
-                }, 5000);
+                }, 10000);
             }
             resolv(true);
         });
@@ -145,6 +145,7 @@ module.exports = {
         };
         const quiz = await Quiz.find(quizRun.quiz);
         res.quizrun = quizRun._id;
+        res.event = eventUid;
         res.current_question = quizRun.current_question;
         if(quiz.questions[quizRun.current_question]) {
             res.question = quiz.questions[quizRun.current_question];
@@ -160,5 +161,16 @@ module.exports = {
             }
         }
         return res;
+    },
+    async addQuizRunInformation(quizs) {
+        return new Promise(async (resolv, reject) => {
+            for(let i in quizs) {
+                const qr = await this.findCurrentRunByEventAndQuiz(quizs[i].event[0], quizs[i]._id.toString());
+                if(qr) {
+                    quizs[i].quizrun = qr;
+                }
+            }
+            resolv(quizs);
+        });
     }
 };

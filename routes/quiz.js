@@ -17,7 +17,8 @@ Router.post('/', Response.apiToken, Response.notGuest, async function(req, res, 
 Router.get('/', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const quizs = await Quiz.getByUserAndEvent(req.connectedUser._id, req.query.event);
-        res.status(200).json(Quiz.serialize(quizs));
+        const quizsWithRun = await QuizRun.addQuizRunInformation(quizs);
+        res.status(200).json(quizsWithRun);
     } catch(e) {
         return Response.sendError(res, e);
     }

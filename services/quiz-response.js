@@ -30,7 +30,7 @@ module.exports = {
             throw new ClientException.ForbiddenException();
         }
         let answer = await this.findAnsweredQuestionByUserAndQuestionIndex(user, eventUid, quizRunUid, questionIdx);
-        if(answer) throw ClientException.ForbiddenException();
+        if(answer) throw new ClientException.ForbiddenException();
         return await this.add(user, eventUid, quizRun, questionIdx, response);
     }
 };
