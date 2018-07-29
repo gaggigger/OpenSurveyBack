@@ -60,7 +60,9 @@ module.exports = {
             });
         });
     },
-    async add(eventUid, quizUid) {
+    async add(eventUid, quiz) {
+        if(!quiz.questions || quiz.questions.length === 0) throw new ClientException.ForbiddenException();
+        let quizUid = quiz._id;
         if(typeof quizUid === 'object') quizUid = quizUid.toString();
         const quizRun = await this.findCurrentRunByEventAndQuiz(eventUid, quizUid);
         if(quizRun !== null) {
@@ -78,7 +80,7 @@ module.exports = {
     },
     async run(userId, eventUid, quizUid) {
         const quiz = await Quiz.getByUserAndId(userId, quizUid);
-        return await this.add(eventUid, quiz._id);
+        return await this.add(eventUid, quiz);
     },
     async incrementCurrentQuestion(quiz, quizRun) {
         // Update current question
@@ -146,6 +148,7 @@ module.exports = {
         const quiz = await Quiz.find(quizRun.quiz);
         res.quizrun = quizRun._id;
         res.event = eventUid;
+        res.quiz = quiz._id.toString();
         res.current_question = quizRun.current_question;
         if(quiz.questions[quizRun.current_question]) {
             res.question = quiz.questions[quizRun.current_question];
