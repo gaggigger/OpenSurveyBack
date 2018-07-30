@@ -1,20 +1,20 @@
 const Db = require('../services/database');
 const ClientException = require('../exceptions/ClientException');
-const ObjectHelpers = require('../helpers/object');
 const Quiz = require('../services/quiz');
 const Socket = require('../services/socket');
 
 module.exports = {
     key: 'quiz-run',
-    async find(quizUid) {
+    async find(quizrunUid) {
         return await Db.find(this.key, {
-            _id: quizUid
+            _id: quizrunUid
         });
     },
-    async findByEventAndQuiz(eventUid, quizUid) {
-        return await Db.find(this.key, {
+    async findByEventAndQuiz(owner, eventUid, quizUid) {
+        return await Db.findAll(this.key, {
             quiz: quizUid,
-            event: eventUid
+            event: eventUid,
+            owner: owner
         });
     },
     async findByEventAndUid(eventUid, quizrunUid) {
@@ -75,12 +75,13 @@ module.exports = {
             finished: false,
             started_at: (new Date()).getTime(),
             finished_at: null,
+            owner: quiz.owner,
             current_question: 0
         });
     },
-    async run(userId, eventUid, quizUid) {
-        const quiz = await Quiz.getByUserAndId(userId, quizUid);
-        return await this.add(eventUid, quiz);
+    async run(quiz) {
+        // const quiz = await Quiz.getByUserAndId(userId, quizUid);
+        return await this.add(quiz.event[0], quiz);
     },
     async incrementCurrentQuestion(quiz, quizRun) {
         // Update current question
@@ -122,6 +123,10 @@ module.exports = {
                     quizRun._id.toString()
                 );
                 Socket.emit(socket, quizRun.event.toString(), 'event-quiz-question', question);
+
+                // Update timestamp question
+                quizRun = await this.updateQuestionTimestamp(quizRun);
+
                 setTimeout(async () => {
                     const qr = await this.incrementCurrentQuestion(quiz, quizRun);
                     if(qr) {
@@ -134,6 +139,17 @@ module.exports = {
                 }, 10000);
             }
             resolv(true);
+        });
+    },
+    async updateQuestionTimestamp(quizRun) {
+        if(! quizRun.response_timestamp) {
+            quizRun.response_timestamp = {};
+        }
+        quizRun.response_timestamp[quizRun.current_question] = (new Date()).getTime();
+        return await Db.update(this.key, {
+            _id: quizRun._id.toString()
+        }, {
+            response_timestamp: quizRun.response_timestamp
         });
     },
     async getCurrentQuestion(eventUid, quizRunUid) {
@@ -165,7 +181,15 @@ module.exports = {
         }
         return res;
     },
-    async addQuizRunInformation(quizs) {
+    async addQuizRunInformation(q) {
+        let quizs = [];
+        let isSingle = false;
+        if(! Array.isArray(q)) {
+            isSingle = true;
+            quizs = [q];
+        } else {
+            quizs = [...q];
+        }
         return new Promise(async (resolv, reject) => {
             for(let i in quizs) {
                 const qr = await this.findCurrentRunByEventAndQuiz(quizs[i].event[0], quizs[i]._id.toString());
@@ -173,7 +197,22 @@ module.exports = {
                     quizs[i].quizrun = qr;
                 }
             }
-            resolv(quizs);
+            if(isSingle) {
+                resolv(quizs[0]);
+            } else {
+                resolv(quizs);
+            }
+        });
+    },
+    stopProcess(socket, quiz) {
+        return new Promise(async (resolv, reject) => {
+            const quizRun = await this.findCurrentRunByEventAndQuiz(quiz.event.toString(), quiz._id.toString());
+            if (quizRun) {
+                await this.closeQuestion(quizRun._id.toString());
+            }
+            Socket.emit(socket, quizRun.event.toString(), 'event-quiz-question-end', quizRun);
+            const result = await this.closeAllRun(quizRun.event, quizRun.quiz);
+            resolv(result);
         });
     }
 };

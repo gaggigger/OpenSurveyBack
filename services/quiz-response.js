@@ -1,7 +1,7 @@
 const Db = require('../services/database');
 const ClientException = require('../exceptions/ClientException');
 const QuizRun = require('../services/quiz-run');
-const Socket = require('../services/socket');
+const Quiz = require('../services/quiz');
 
 module.exports = {
     key: 'quiz-response',
@@ -14,13 +14,25 @@ module.exports = {
         });
     },
     async add(user, eventUid, quizRun, questionIdx, response) {
+        const quiz = await Quiz.find(quizRun.quiz.toString());
+        if(!quiz.questions[questionIdx]) {
+            throw new ClientException.ForbiddenException();
+        }
+        const question = quiz.questions[questionIdx];
+        const resp = question.response.filter(item => item.uid === response);
+        if(! resp[0]) {
+            throw new ClientException.ForbiddenException();
+        }
         return await Db.add(this.key, {
             user: user,
             quiz: quizRun.quiz.toString(),
             event: eventUid.toString(),
             quizrun: quizRun._id.toString(),
             question_index: questionIdx,
-            response: response
+            // response_timestamp: (new Date()).getTime(),
+            response_duration: (new Date()).getTime() - quizRun.response_timestamp[questionIdx],
+            response: response,
+            correct: resp[0].correct_answer
         });
     },
     async respond(user, eventUid, quizRunUid, questionIdx, response) {

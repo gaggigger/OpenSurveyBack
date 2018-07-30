@@ -3,7 +3,6 @@ const Router = Express.Router();
 const Quiz = require('../services/quiz');
 const QuizRun = require('../services/quiz-run');
 const Response = require('../helpers/response');
-const Socket = require('../services/socket');
 
 Router.post('/', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
@@ -27,7 +26,8 @@ Router.get('/', Response.apiToken, Response.notGuest, async function(req, res, n
 Router.get('/:quizuid', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const quiz = await Quiz.getByUserAndId(req.connectedUser._id, req.params.quizuid);
-        res.status(200).json(Quiz.serialize(quiz));
+        const quizWithRun = await QuizRun.addQuizRunInformation(quiz);
+        res.status(200).json(Quiz.serialize(quizWithRun));
     } catch(e) {
         return Response.sendError(res, e);
     }
@@ -48,9 +48,20 @@ Router.post('/:quizuid', Response.apiToken, Response.notGuest, async function(re
 
 Router.post('/:quizuid/start', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
-        const quizRun = await QuizRun.run(req.connectedUser._id, req.body.event, req.params.quizuid);
+        const quiz = await Quiz.getByUserAndId(req.connectedUser._id, req.params.quizuid);
+        const quizRun = await QuizRun.run(quiz);
         QuizRun.startProcess(req.inject.io, quizRun._id);
         res.status(200).json(quizRun);
+    } catch(e) {
+        return Response.sendError(res, e);
+    }
+});
+
+Router.post('/:quizuid/stop', Response.apiToken, Response.notGuest, async function(req, res, next) {
+    try {
+        const quiz = await Quiz.getByUserAndId(req.connectedUser._id, req.params.quizuid);
+        const result = await QuizRun.stopProcess(req.inject.io, quiz);
+        res.status(200).json(result);
     } catch(e) {
         return Response.sendError(res, e);
     }
