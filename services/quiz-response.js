@@ -23,6 +23,10 @@ module.exports = {
         if(! resp[0]) {
             throw new ClientException.ForbiddenException();
         }
+        let responseDuration = (new Date()).getTime() - quizRun.started_at;
+        if(quizRun.response_timestamp && quizRun.response_timestamp[questionIdx]) {
+            responseDuration = (new Date()).getTime() - quizRun.response_timestamp[questionIdx]
+        }
         return await Db.add(this.key, {
             user: user,
             quiz: quizRun.quiz.toString(),
@@ -30,7 +34,7 @@ module.exports = {
             quizrun: quizRun._id.toString(),
             question_index: questionIdx,
             // response_timestamp: (new Date()).getTime(),
-            response_duration: (new Date()).getTime() - quizRun.response_timestamp[questionIdx],
+            response_duration: responseDuration,
             response: response,
             correct: resp[0].correct_answer
         });

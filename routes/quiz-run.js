@@ -17,8 +17,6 @@ Router.get('/:eventuid/:quizid', Response.apiToken, async function(req, res, nex
 Router.get('/:eventuid/:quizrunuid/step', Response.apiToken, async function(req, res, next) {
     try {
         const quizRun = await QuizRun.getCurrentQuestion(req.params.eventuid, req.params.quizrunuid);
-        const quiz = await Quiz.getByUserAndId(req.connectedUser._id, quizRun.quiz.toString());
-        if(! quiz) throw new ClientException.ForbiddenException();
         res.status(200).json(quizRun);
     } catch(e) {
         return Response.sendError(res, e);

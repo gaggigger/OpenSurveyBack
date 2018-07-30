@@ -3,6 +3,7 @@ const Router = Express.Router();
 const Quiz = require('../services/quiz');
 const QuizRun = require('../services/quiz-run');
 const Response = require('../helpers/response');
+const Event = require('../services/event');
 
 Router.post('/', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
@@ -49,6 +50,11 @@ Router.post('/:quizuid', Response.apiToken, Response.notGuest, async function(re
 Router.post('/:quizuid/start', Response.apiToken, Response.notGuest, async function(req, res, next) {
     try {
         const quiz = await Quiz.getByUserAndId(req.connectedUser._id, req.params.quizuid);
+
+        // restrict event
+        const event = Event.getByUid(quiz.event);
+        Event.isAvailable(event);
+
         const quizRun = await QuizRun.run(quiz);
         QuizRun.startProcess(req.inject.io, quizRun._id);
         res.status(200).json(quizRun);
