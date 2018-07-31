@@ -13,6 +13,13 @@ module.exports = {
             question_index: questionIdx
         });
     },
+    async findByEventQuizAndQuizRun(eventUid, quizUid, quizRunUid) {
+        return await Db.findAll(this.key, {
+            quiz: quizUid.toString(),
+            event: eventUid.toString(),
+            quizrun: quizRunUid.toString()
+        });
+    },
     async add(user, eventUid, quizRun, questionIdx, response) {
         const quiz = await Quiz.find(quizRun.quiz.toString());
         if(!quiz.questions[questionIdx]) {
