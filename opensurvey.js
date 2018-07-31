@@ -1,11 +1,12 @@
+const Config = require('./config');
+
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, { path: Config.api.socketPath });
 const bodyParser = require('body-parser');
 
 const Response = require('./helpers/response');
-const Config = require('./config');
 const Socket = require('./services/socket');
 
 const rLogin = require('./routes/login');
