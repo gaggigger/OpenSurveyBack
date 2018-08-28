@@ -31,7 +31,7 @@ module.exports = {
                 started: true,
                 finished: false
             });
-        } catch(e) {
+        } catch (e) {
             // Close all previous run
             this.closeAllRun(eventUid, quizUid);
             return null;
@@ -61,11 +61,11 @@ module.exports = {
         });
     },
     async add(eventUid, quiz) {
-        if(!quiz.questions || quiz.questions.length === 0) throw new ClientException.ForbiddenException();
+        if (!quiz.questions || quiz.questions.length === 0) throw new ClientException.ForbiddenException();
         let quizUid = quiz._id;
-        if(typeof quizUid === 'object') quizUid = quizUid.toString();
+        if (typeof quizUid === 'object') quizUid = quizUid.toString();
         const quizRun = await this.findCurrentRunByEventAndQuiz(eventUid, quizUid);
-        if(quizRun !== null) {
+        if (quizRun !== null) {
             return quizRun;
         }
         return await Db.add(this.key, {
@@ -129,20 +129,20 @@ module.exports = {
 
                 setTimeout(async () => {
                     const qr = await this.incrementCurrentQuestion(quiz, quizRun);
-                    if(qr) {
+                    if (qr) {
                         this.startQuestion(socket, quiz, qr);
                     } else {
                         // close quizrun
                         this.closeQuestion(quizRun._id.toString());
                         Socket.emit(socket, quizRun.event.toString(), 'event-quiz-question-end', quizRun);
                     }
-                }, 10000);
+                }, question.duration ? parseInt(question.duration) * 1000 : 10000);
             }
             resolv(true);
         });
     },
     async updateQuestionTimestamp(quizRun) {
-        if(! quizRun.response_timestamp) {
+        if (!quizRun.response_timestamp) {
             quizRun.response_timestamp = {};
         }
         quizRun.response_timestamp[quizRun.current_question] = (new Date()).getTime();
@@ -155,7 +155,7 @@ module.exports = {
     async getCurrentQuestion(eventUid, quizRunUid) {
         const res = {};
         const quizRun = await this.findByEventAndUid(eventUid, quizRunUid);
-        if(quizRun === null || quizRun.finished === true) return {
+        if (quizRun === null || quizRun.finished === true) return {
             question: {
                 name: '',
                 response: []
@@ -166,10 +166,10 @@ module.exports = {
         res.event = eventUid;
         res.quiz = quiz._id.toString();
         res.current_question = quizRun.current_question;
-        if(quiz.questions[quizRun.current_question]) {
+        if (quiz.questions[quizRun.current_question]) {
             res.question = quiz.questions[quizRun.current_question];
             // Shuffle response
-            if(res.question.response && res.question.response.length > 0) {
+            if (res.question.response && res.question.response.length > 0) {
                 res.question.response = res.question.response
                     .map(item => {
                         delete item.correct_answer;
@@ -184,20 +184,20 @@ module.exports = {
     async addQuizRunInformation(q) {
         let quizs = [];
         let isSingle = false;
-        if(! Array.isArray(q)) {
+        if (!Array.isArray(q)) {
             isSingle = true;
             quizs = [q];
         } else {
             quizs = [...q];
         }
         return new Promise(async (resolv, reject) => {
-            for(let i in quizs) {
+            for (let i in quizs) {
                 const qr = await this.findCurrentRunByEventAndQuiz(quizs[i].event[0], quizs[i]._id.toString());
-                if(qr) {
+                if (qr) {
                     quizs[i].quizrun = qr;
                 }
             }
-            if(isSingle) {
+            if (isSingle) {
                 resolv(quizs[0]);
             } else {
                 resolv(quizs);
